@@ -1,4 +1,3 @@
-
 export default (sequelize, DataTypes) => {
   const Users = sequelize.define('Users', {
     role: {
@@ -15,6 +14,12 @@ export default (sequelize, DataTypes) => {
       allowNull: false,
     },
   });
+
+  Users.associate = (models) => {
+    Users.hasMany(models.Sms, {
+      foreignKey: 'id',
+    });
+  };
 
   return Users;
 };
