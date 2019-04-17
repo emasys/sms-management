@@ -17,6 +17,7 @@ const testResource = {};
     testResource.server = server;
     await server.start();
     Log(`Server running at: ${server.info.uri}`);
+    Log(`docs running on ${server.info.uri}/documentation`);
   } catch (error) {
     Log.error(error);
     process.exit(1);

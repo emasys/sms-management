@@ -1,4 +1,3 @@
-
 export default (sequelize, DataTypes) => {
   const Users = sequelize.define('Users', {
     role: {
@@ -13,6 +12,7 @@ export default (sequelize, DataTypes) => {
     phoneNumber: {
       type: DataTypes.STRING,
       allowNull: false,
+      unique: true,
     },
   });
 
