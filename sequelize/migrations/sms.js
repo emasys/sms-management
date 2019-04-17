@@ -7,17 +7,17 @@ module.exports = {
       type: Sequelize.INTEGER,
     },
     recipient: {
-      type: Sequelize.INTEGER,
+      type: Sequelize.STRING,
       references: {
         model: 'Users',
-        key: 'id',
+        key: 'phoneNumber',
       },
     },
     sender: {
-      type: Sequelize.INTEGER,
+      type: Sequelize.STRING,
       references: {
         model: 'Users',
-        key: 'id',
+        key: 'phoneNumber',
       },
     },
     message: {

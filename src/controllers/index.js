@@ -1,7 +1,7 @@
 import Boom from 'boom';
 import model from '../../sequelize/models';
 import createUser from './user';
-import fetchUserMessages from './sms';
+import { fetchUserMessages, sendMessage, fetchAllUserMessages } from './sms';
 
 const controllerPlugin = {
   name: 'controller',
@@ -33,6 +33,8 @@ const controllerPlugin = {
     server.auth.default('default');
     server.route(createUser);
     server.route(fetchUserMessages);
+    server.route(fetchAllUserMessages);
+    server.route(sendMessage);
   },
 };
 

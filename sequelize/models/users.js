@@ -12,14 +12,9 @@ export default (sequelize, DataTypes) => {
     phoneNumber: {
       type: DataTypes.STRING,
       allowNull: false,
+      unique: true,
     },
   });
-
-  Users.associate = (models) => {
-    Users.hasMany(models.Sms, {
-      foreignKey: 'id',
-    });
-  };
 
   return Users;
 };

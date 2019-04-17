@@ -5,19 +5,17 @@ export default (sequelize, DataTypes) => {
       allowNull: false,
     },
     recipient: {
-      type: DataTypes.INTEGER,
-      allowNull: false,
+      type: DataTypes.STRING,
       references: {
         model: 'Users',
-        key: 'id',
+        key: 'phoneNumber',
       },
     },
     sender: {
-      type: DataTypes.INTEGER,
-      allowNull: false,
+      type: DataTypes.STRING,
       references: {
         model: 'Users',
-        key: 'id',
+        key: 'phoneNumber',
       },
     },
   });
