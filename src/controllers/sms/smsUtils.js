@@ -50,3 +50,21 @@ export const sendOptions = {
     }),
   },
 };
+
+export const readOptions = {
+  description: 'Read a message',
+  tags: ['api'],
+  auth: {
+    scope: ['admin', 'user'],
+  },
+  validate: {
+    params: Joi.object().keys({
+      messageId: Joi.string()
+        .trim()
+        .required()
+        .error(() => ({
+          message: 'Message id is required.',
+        })),
+    }),
+  },
+};

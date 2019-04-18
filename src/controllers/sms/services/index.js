@@ -42,56 +42,19 @@ class SmsOps {
     }
   }
 
-  async update(data, criteria) {
+  async readMessage(id) {
+    const criteria = { where: { id } };
     try {
-      const [response] = await this.model[this.table].update(data, criteria);
+      const [response] = await this.model.Sms.update({ read: 'true' }, criteria);
       if (response) {
-        return { message: 'record updated' };
+        return this.model.Sms.findOne(criteria);
       }
       throw new Error(
-        'either the location id is invalid or you are not authorized to modify this location',
+        'Invalid message Id',
       );
     } catch (error) {
       return Boom.badRequest(error.message);
     }
-  }
-
-  async delete(criteria) {
-    try {
-      const response = await this.model[this.table].destroy(criteria);
-      if (response) {
-        return { message: 'record deleted' };
-      }
-      throw new Error(
-        'either the location id is invalid or you are not authorized to delete this location',
-      );
-    } catch (error) {
-      return Boom.badRequest(error.message);
-    }
-  }
-
-  // eslint-disable-next-line class-methods-use-this
-  isChanged(value, key) {
-    if (value) {
-      return { [key]: value };
-    }
-    return {};
-  }
-
-  prepareForDb(role, title, male, female, id, userId) {
-    const isAdmin = role === 'admin';
-    const titleChanged = this.isChanged(title, 'title');
-    const maleChanged = this.isChanged(male, 'male');
-    const femaleChanged = this.isChanged(female, 'female');
-    const data = {
-      ...titleChanged,
-      ...maleChanged,
-      ...femaleChanged,
-    };
-
-    const criteria = isAdmin ? { where: { id } } : { where: { id, userId } };
-
-    return { data, criteria };
   }
 }
 
