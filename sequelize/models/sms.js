@@ -4,12 +4,22 @@ export default (sequelize, DataTypes) => {
       type: DataTypes.TEXT,
       allowNull: false,
     },
+    id: {
+      type: DataTypes.STRING,
+      allowNull: false,
+      primaryKey: true,
+    },
     recipient: {
       type: DataTypes.STRING,
       references: {
         model: 'Users',
         key: 'phoneNumber',
       },
+    },
+    read: {
+      type: DataTypes.ENUM,
+      values: [false, true],
+      defaultValue: 'false',
     },
     sender: {
       type: DataTypes.STRING,

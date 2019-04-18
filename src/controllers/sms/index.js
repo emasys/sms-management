@@ -1,4 +1,7 @@
-import { fetchOptions, sendOptions, fetchMessages } from './smsUtils';
+import uuid from 'uuid/v4';
+import {
+  fetchOptions, sendOptions, fetchMessages, readOptions,
+} from './smsUtils';
 import SmsOps from './services';
 
 export const fetchAllUserMessages = {
@@ -41,8 +44,28 @@ export const sendMessage = {
       },
       payload: { message, phone },
     } = request;
-    const data = { message, recipient: `${phone}`, sender: phoneNumber };
+    const id = uuid();
+    const data = {
+      message,
+      recipient: `${phone}`,
+      sender: phoneNumber,
+      id,
+    };
     const sms = new SmsOps(this.model, h);
     return sms.sendMessage(data);
+  },
+};
+
+export const readMessage = {
+  path: '/v1/message/{messageId}',
+  method: 'GET',
+  options: readOptions,
+  async handler(request, h) {
+    const {
+      params: { messageId },
+    } = request;
+
+    const sms = new SmsOps(this.model, h);
+    return sms.readMessage(messageId);
   },
 };
