@@ -12,10 +12,10 @@ module.exports = {
         key: 'phoneNumber',
       },
     },
-    read: {
+    status: {
       type: Sequelize.ENUM,
-      values: [false, true],
-      defaultValue: 'false',
+      values: ['read', 'delivered'],
+      defaultValue: 'delivered',
     },
     sender: {
       type: Sequelize.STRING,

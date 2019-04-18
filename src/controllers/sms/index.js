@@ -62,10 +62,13 @@ export const readMessage = {
   options: readOptions,
   async handler(request, h) {
     const {
+      auth: {
+        credentials: { phoneNumber },
+      },
       params: { messageId },
     } = request;
 
     const sms = new SmsOps(this.model, h);
-    return sms.readMessage(messageId);
+    return sms.readMessage(messageId, phoneNumber);
   },
 };

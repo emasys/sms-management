@@ -42,16 +42,14 @@ class SmsOps {
     }
   }
 
-  async readMessage(id) {
-    const criteria = { where: { id } };
+  async readMessage(id, recipient) {
+    const criteria = { where: { id, recipient } };
     try {
-      const [response] = await this.model.Sms.update({ read: 'true' }, criteria);
+      const [response] = await this.model.Sms.update({ status: 'read' }, criteria);
       if (response) {
         return this.model.Sms.findOne(criteria);
       }
-      throw new Error(
-        'Invalid message Id',
-      );
+      return Boom.unauthorized('You are not authorized to view this message');
     } catch (error) {
       return Boom.badRequest(error.message);
     }

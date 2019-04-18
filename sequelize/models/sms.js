@@ -16,10 +16,10 @@ export default (sequelize, DataTypes) => {
         key: 'phoneNumber',
       },
     },
-    read: {
+    status: {
       type: DataTypes.ENUM,
-      values: [false, true],
-      defaultValue: 'false',
+      values: ['read', 'delivered'],
+      defaultValue: 'delivered',
     },
     sender: {
       type: DataTypes.STRING,
