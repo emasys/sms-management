@@ -68,3 +68,29 @@ export const readOptions = {
     }),
   },
 };
+
+export const deleteOptions = {
+  description: 'Delete a message',
+  tags: ['api'],
+  auth: {
+    scope: ['admin', 'user'],
+  },
+  validate: {
+    params: Joi.object().keys({
+      messageId: Joi.string()
+        .trim()
+        .required()
+        .error(() => ({
+          message: 'Message id is required.',
+        })),
+    }),
+    query: Joi.object().keys({
+      user: Joi.string()
+        .trim()
+        .required()
+        .error(() => ({
+          message: 'User type is required',
+        })),
+    }),
+  },
+};

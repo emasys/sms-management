@@ -1,3 +1,5 @@
+/* eslint-disable camelcase */
+/* eslint-disable class-methods-use-this */
 import Boom from 'boom';
 
 class SmsOps {
@@ -42,16 +44,50 @@ class SmsOps {
     }
   }
 
-  async readMessage(id) {
-    const criteria = { where: { id } };
+  async readMessage(id, recipient) {
+    const criteria = { where: { id, recipient } };
     try {
-      const [response] = await this.model.Sms.update({ read: 'true' }, criteria);
+      const [response] = await this.model.Sms.update({ status: 'read' }, criteria);
       if (response) {
         return this.model.Sms.findOne(criteria);
       }
-      throw new Error(
-        'Invalid message Id',
-      );
+      return Boom.unauthorized('You are not authorized to view this message');
+    } catch (error) {
+      return Boom.badRequest(error.message);
+    }
+  }
+
+  handleDeleteCriteria(id, phone, user) {
+    const criteria = {
+      recipient: { where: { id, recipient: phone }, returning: true, raw: true },
+      sender: { where: { id, sender: phone }, returning: true, raw: true },
+    };
+
+    return criteria[user];
+  }
+
+  handleDeleteQuery(id, phone, user) {
+    const criteria = {
+      recipient: { recipient_status: 'deleted' },
+      sender: { status: 'deleted' },
+    };
+
+    return criteria[user];
+  }
+
+  async deleteMessage(id, phone, user) {
+    const criteria = this.handleDeleteCriteria(id, phone, user);
+    const query = this.handleDeleteQuery(id, phone, user);
+    try {
+      const [response, [data]] = await this.model.Sms.update(query, criteria);
+      if (response) {
+        const { status, recipient_status } = data;
+        if (status === 'deleted' && status === recipient_status) {
+          await this.model.Sms.destroy(criteria);
+        }
+        return { message: 'Message deleted' };
+      }
+      return Boom.unauthorized('You are not authorized to delete this message');
     } catch (error) {
       return Boom.badRequest(error.message);
     }
