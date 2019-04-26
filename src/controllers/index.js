@@ -2,7 +2,7 @@ import Boom from 'boom';
 import model from '../../sequelize/models';
 import createUser from './user';
 import {
-  fetchUserMessages, sendMessage, fetchAllUserMessages, readMessage,
+  fetchUserMessages, sendMessage, fetchAllUserMessages, readMessage, deleteMessage,
 } from './sms';
 
 const scheme = () => ({
@@ -38,6 +38,7 @@ const controllerPlugin = {
     server.route(fetchAllUserMessages);
     server.route(sendMessage);
     server.route(readMessage);
+    server.route(deleteMessage);
   },
 };
 

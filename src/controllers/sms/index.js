@@ -1,6 +1,6 @@
 import uuid from 'uuid/v4';
 import {
-  fetchOptions, sendOptions, fetchMessages, readOptions,
+  fetchOptions, sendOptions, fetchMessages, readOptions, deleteOptions,
 } from './smsUtils';
 import SmsOps from './services';
 
@@ -70,5 +70,23 @@ export const readMessage = {
 
     const sms = new SmsOps(this.model, h);
     return sms.readMessage(messageId, phoneNumber);
+  },
+};
+
+export const deleteMessage = {
+  path: '/v1/message/{messageId}',
+  method: 'DELETE',
+  options: deleteOptions,
+  async handler(request, h) {
+    const {
+      auth: {
+        credentials: { phoneNumber },
+      },
+      params: { messageId },
+      query: { user },
+    } = request;
+
+    const sms = new SmsOps(this.model, h);
+    return sms.deleteMessage(messageId, phoneNumber, user);
   },
 };

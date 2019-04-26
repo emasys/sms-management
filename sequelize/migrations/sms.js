@@ -12,9 +12,14 @@ module.exports = {
         key: 'phoneNumber',
       },
     },
+    recipient_status: {
+      type: Sequelize.ENUM,
+      values: ['read', 'deleted', 'delivered'],
+      defaultValue: 'delivered',
+    },
     status: {
       type: Sequelize.ENUM,
-      values: ['read', 'delivered'],
+      values: ['delivered', 'deleted'],
       defaultValue: 'delivered',
     },
     sender: {
