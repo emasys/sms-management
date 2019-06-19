@@ -7,6 +7,9 @@ export const fetchOptions = {
     scope: ['admin'],
   },
   validate: {
+    headers: {
+      phone: Joi.string().required(),
+    },
     query: Joi.object().keys({
       limit: Joi.number().default(20),
       offset: Joi.number().default(0),
@@ -82,14 +85,6 @@ export const deleteOptions = {
         .required()
         .error(() => ({
           message: 'Message id is required.',
-        })),
-    }),
-    query: Joi.object().keys({
-      user: Joi.string()
-        .trim()
-        .required()
-        .error(() => ({
-          message: 'User type is required',
         })),
     }),
   },

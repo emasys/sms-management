@@ -27,6 +27,16 @@
   "bugs": {
     "url": "https://github.com/emasys/sms-management/issues"
   },
+  "nyc": {
+    "all": true,
+    "include": [
+      "src/**/*.js"
+    ],
+    "exclude": [
+      "**/*.spec.js",
+      "src/controllers/"
+    ]
+  },
   "homepage": "https://github.com/emasys/sms-management#readme",
   "devDependencies": {
     "@babel/cli": "^7.4.4",

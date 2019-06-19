@@ -17,8 +17,8 @@ export const fetchAllUserMessages = {
   },
 };
 
-export const fetchUserMessages = {
-  path: '/v1/messages',
+export const fetchUserInbox = {
+  path: '/v1/inbox',
   method: 'GET',
   options: fetchMessages,
   async handler(request, h) {
@@ -29,7 +29,23 @@ export const fetchUserMessages = {
       },
     } = request;
     const sms = new SmsOps(this.model, h);
-    return sms.fetch(limit, offset, phoneNumber);
+    return sms.fetch(limit, offset, 'recipient', phoneNumber);
+  },
+};
+
+export const fetchUserOutbox = {
+  path: '/v1/outbox',
+  method: 'GET',
+  options: fetchMessages,
+  async handler(request, h) {
+    const {
+      query: { limit, offset },
+      auth: {
+        credentials: { phoneNumber },
+      },
+    } = request;
+    const sms = new SmsOps(this.model, h);
+    return sms.fetch(limit, offset, 'sender', phoneNumber);
   },
 };
 
@@ -57,7 +73,7 @@ export const sendMessage = {
 };
 
 export const readMessage = {
-  path: '/v1/message/{messageId}',
+  path: '/v1/message/{messageId}/read',
   method: 'GET',
   options: readOptions,
   async handler(request, h) {
@@ -73,8 +89,25 @@ export const readMessage = {
   },
 };
 
-export const deleteMessage = {
-  path: '/v1/message/{messageId}',
+export const viewMessage = {
+  path: '/v1/message/{messageId}/view',
+  method: 'GET',
+  options: readOptions,
+  async handler(request, h) {
+    const {
+      auth: {
+        credentials: { phoneNumber },
+      },
+      params: { messageId },
+    } = request;
+
+    const sms = new SmsOps(this.model, h);
+    return sms.viewMessage(messageId, phoneNumber);
+  },
+};
+
+export const deleteInbox = {
+  path: '/v1/inbox/{messageId}',
   method: 'DELETE',
   options: deleteOptions,
   async handler(request, h) {
@@ -83,10 +116,24 @@ export const deleteMessage = {
         credentials: { phoneNumber },
       },
       params: { messageId },
-      query: { user },
     } = request;
-
     const sms = new SmsOps(this.model, h);
-    return sms.deleteMessage(messageId, phoneNumber, user);
+    return sms.deleteMessage(messageId, phoneNumber, 'recipient');
+  },
+};
+
+export const deleteOutbox = {
+  path: '/v1/outbox/{messageId}',
+  method: 'DELETE',
+  options: deleteOptions,
+  async handler(request, h) {
+    const {
+      auth: {
+        credentials: { phoneNumber },
+      },
+      params: { messageId },
+    } = request;
+    const sms = new SmsOps(this.model, h);
+    return sms.deleteMessage(messageId, phoneNumber, 'sender');
   },
 };

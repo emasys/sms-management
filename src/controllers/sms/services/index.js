@@ -16,12 +16,15 @@ class SmsOps {
       const response = await this.model.Sms.create(data);
       return this.h.response({ message: response }).code(201);
     } catch (error) {
+      if (error.message.includes('insert or update')) {
+        return Boom.badRequest('Both recipient and sender must be registered');
+      }
       return Boom.badRequest(error.message);
     }
   }
 
-  async fetch(limit, offset, phoneNumber = null) {
-    const criteria = phoneNumber ? { where: { recipient: phoneNumber } } : {};
+  async fetch(limit, offset, type = 'recipient', phoneNumber = null) {
+    const criteria = phoneNumber ? { where: { [type]: phoneNumber } } : {};
     try {
       const response = await this.model.Sms.findAndCountAll({
         limit,
@@ -47,9 +50,22 @@ class SmsOps {
   async readMessage(id, recipient) {
     const criteria = { where: { id, recipient } };
     try {
-      const [response] = await this.model.Sms.update({ status: 'read' }, criteria);
+      const [response] = await this.model.Sms.update({ recipient_status: 'read' }, criteria);
       if (response) {
         return this.model.Sms.findOne(criteria);
+      }
+      return Boom.unauthorized('You are not authorized to read this message');
+    } catch (error) {
+      return Boom.badRequest(error.message);
+    }
+  }
+
+  async viewMessage(id, sender) {
+    const criteria = { where: { id, sender } };
+    try {
+      const message = await this.model.Sms.findOne(criteria);
+      if (message) {
+        return message;
       }
       return Boom.unauthorized('You are not authorized to view this message');
     } catch (error) {
