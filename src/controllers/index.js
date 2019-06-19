@@ -2,7 +2,14 @@ import Boom from 'boom';
 import model from '../../sequelize/models';
 import createUser from './user';
 import {
-  fetchUserMessages, sendMessage, fetchAllUserMessages, readMessage, deleteMessage,
+  fetchUserInbox,
+  sendMessage,
+  fetchAllUserMessages,
+  readMessage,
+  viewMessage,
+  fetchUserOutbox,
+  deleteInbox,
+  deleteOutbox,
 } from './sms';
 
 const scheme = () => ({
@@ -34,11 +41,14 @@ const controllerPlugin = {
     server.auth.strategy('default', 'custom');
     server.auth.default('default');
     server.route(createUser);
-    server.route(fetchUserMessages);
+    server.route(fetchUserInbox);
+    server.route(fetchUserOutbox);
     server.route(fetchAllUserMessages);
     server.route(sendMessage);
     server.route(readMessage);
-    server.route(deleteMessage);
+    server.route(viewMessage);
+    server.route(deleteInbox);
+    server.route(deleteOutbox);
   },
 };
 
