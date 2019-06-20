@@ -1,6 +1,7 @@
 /* eslint-disable camelcase */
 /* eslint-disable class-methods-use-this */
 import Boom from 'boom';
+import { pick } from 'lodash';
 
 class SmsOps {
   constructor(model, h) {
@@ -23,8 +24,8 @@ class SmsOps {
     }
   }
 
-  async fetch(limit, offset, type = 'recipient', phoneNumber = null) {
-    const criteria = phoneNumber ? { where: { [type]: phoneNumber } } : {};
+  async fetch(limit, offset, type = 'recipient', phoneNumber) {
+    const criteria = { where: { [type]: phoneNumber } };
     try {
       const response = await this.model.Sms.findAndCountAll({
         limit,
@@ -48,26 +49,21 @@ class SmsOps {
   }
 
   async readMessage(id, recipient) {
-    const criteria = { where: { id, recipient } };
-    try {
-      const [response] = await this.model.Sms.update({ recipient_status: 'read' }, criteria);
-      if (response) {
-        return this.model.Sms.findOne(criteria);
-      }
-      return Boom.unauthorized('You are not authorized to read this message');
-    } catch (error) {
-      return Boom.badRequest(error.message);
-    }
+    const criteria = { where: { id, recipient }, returning: true, plain: true };
+    const response = await this.model.Sms.update({ recipient_status: 'read' }, criteria);
+    const message = pick(response[1], ['sender', 'recipient_status', 'createdAt', 'message']);
+    return message;
   }
 
-  async viewMessage(id, sender) {
-    const criteria = { where: { id, sender } };
+  async accessMessage(id, user) {
+    const criteria = { where: { id, sender: user } };
     try {
       const message = await this.model.Sms.findOne(criteria);
-      if (message) {
-        return message;
+      if (!message) {
+        return this.readMessage(id, user);
       }
-      return Boom.unauthorized('You are not authorized to view this message');
+      const response = pick(message, ['recipient', 'recipient_status', 'createdAt', 'message']);
+      return response;
     } catch (error) {
       return Boom.badRequest(error.message);
     }
@@ -78,7 +74,6 @@ class SmsOps {
       recipient: { where: { id, recipient: phone }, returning: true, raw: true },
       sender: { where: { id, sender: phone }, returning: true, raw: true },
     };
-
     return criteria[user];
   }
 
