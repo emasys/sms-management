@@ -17,8 +17,6 @@ const config = {
           stripUnknown: true,
         },
         failAction: async (request, h, err) => {
-          // Enable to log errors
-          // console.error('======>', err);
           throw err;
         },
       },

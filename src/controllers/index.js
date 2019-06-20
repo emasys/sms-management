@@ -4,8 +4,6 @@ import createUser from './user';
 import {
   fetchUserInbox,
   sendMessage,
-  fetchAllUserMessages,
-  readMessage,
   viewMessage,
   fetchUserOutbox,
   deleteInbox,
@@ -43,9 +41,7 @@ const controllerPlugin = {
     server.route(createUser);
     server.route(fetchUserInbox);
     server.route(fetchUserOutbox);
-    server.route(fetchAllUserMessages);
     server.route(sendMessage);
-    server.route(readMessage);
     server.route(viewMessage);
     server.route(deleteInbox);
     server.route(deleteOutbox);

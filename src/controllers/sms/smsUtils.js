@@ -1,4 +1,5 @@
 import Joi from 'joi';
+import SmsOps from './services';
 
 export const fetchOptions = {
   description: 'Fetch all user messages',
@@ -17,8 +18,7 @@ export const fetchOptions = {
   },
 };
 
-export const fetchMessages = {
-  description: 'Fetch user messages',
+const fetchMessages = {
   tags: ['api'],
   auth: {
     scope: ['user', 'admin'],
@@ -29,6 +29,16 @@ export const fetchMessages = {
       offset: Joi.number().default(0),
     }),
   },
+};
+
+export const fetchInbox = {
+  description: 'Fetch user inbox',
+  ...fetchMessages,
+};
+
+export const fetchOutbox = {
+  description: 'Fetch user outbox',
+  ...fetchMessages,
 };
 
 export const sendOptions = {
@@ -54,8 +64,7 @@ export const sendOptions = {
   },
 };
 
-export const readOptions = {
-  description: 'Read a message',
+const accessSingleMessage = {
   tags: ['api'],
   auth: {
     scope: ['admin', 'user'],
@@ -64,28 +73,39 @@ export const readOptions = {
     params: Joi.object().keys({
       messageId: Joi.string()
         .trim()
-        .required()
-        .error(() => ({
-          message: 'Message id is required.',
-        })),
+        .required(),
     }),
   },
 };
 
+export const readOptions = {
+  description: 'Read a message',
+  ...accessSingleMessage,
+};
+
 export const deleteOptions = {
   description: 'Delete a message',
-  tags: ['api'],
-  auth: {
-    scope: ['admin', 'user'],
-  },
-  validate: {
-    params: Joi.object().keys({
-      messageId: Joi.string()
-        .trim()
-        .required()
-        .error(() => ({
-          message: 'Message id is required.',
-        })),
-    }),
-  },
+  ...accessSingleMessage,
+};
+
+export const fetchMessage = (request, h, type, model) => {
+  const {
+    query: { limit, offset },
+    auth: {
+      credentials: { phoneNumber },
+    },
+  } = request;
+  const sms = new SmsOps(model, h);
+  return sms.fetch(limit, offset, type, phoneNumber);
+};
+
+export const deleteMessage = (request, h, type, model) => {
+  const {
+    auth: {
+      credentials: { phoneNumber },
+    },
+    params: { messageId },
+  } = request;
+  const sms = new SmsOps(model, h);
+  return sms.deleteMessage(messageId, phoneNumber, type);
 };

@@ -17,7 +17,7 @@ describe('test suite for user operations', () => {
           done(errors);
         });
     });
-    it('should respond with success message', (done) => {
+    it('should successfully register a user', (done) => {
       request(app.server.listener)
         .post('/v1/user/register')
         .send({
@@ -29,8 +29,26 @@ describe('test suite for user operations', () => {
         .end((err, res) => {
           if (!err) {
             expect(res.body).to.include({ message: '02341235482375 has been registered' });
+            return done();
           }
-          done();
+          return done(err);
+        });
+    });
+    it('should fail to register the same user twice', (done) => {
+      request(app.server.listener)
+        .post('/v1/user/register')
+        .send({
+          name: 'admin',
+          phoneNumber: '02341235482375',
+        })
+        .expect('Content-Type', /json/)
+        .expect(409)
+        .end((err, res) => {
+          if (!err) {
+            expect(res.body).to.include({ message: 'phoneNumber must be unique' });
+            return done();
+          }
+          return done(err);
         });
     });
     it('should handle incomplete phone number', (done) => {
@@ -48,8 +66,9 @@ describe('test suite for user operations', () => {
               message:
                 'child "phoneNumber" fails because [Phone number must contain 14 numbers like so - 0234xxxxxxxxxx]',
             });
+            return done();
           }
-          done();
+          return done(err);
         });
     });
     it('should handle invalid name', (done) => {
@@ -67,8 +86,9 @@ describe('test suite for user operations', () => {
               message:
                 'child "name" fails because [Name must not contain numbers and special characters]',
             });
+            return done();
           }
-          done();
+          return done(err);
         });
     });
   });
