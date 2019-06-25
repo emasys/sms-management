@@ -18,7 +18,7 @@ class SmsOps {
       return this.h.response({ message: response }).code(201);
     } catch (error) {
       if (error.message.includes('insert or update')) {
-        return Boom.badRequest('Both recipient and sender must be registered');
+        return this.h.response({ message: 'Both recipient and sender must be registered' }).code(400);
       }
       return Boom.badRequest(error.message);
     }
@@ -98,7 +98,7 @@ class SmsOps {
         }
         return { message: 'Message deleted' };
       }
-      return Boom.unauthorized('You are not authorized to delete this message');
+      return this.h.response({ message: 'You are not authorized to delete this message' }).code(401);
     } catch (error) {
       return Boom.badRequest(error.message);
     }
