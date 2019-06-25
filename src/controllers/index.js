@@ -10,6 +10,17 @@ import {
   deleteOutbox,
 } from './sms';
 
+export const notFound = {
+  path: '/{any*}',
+  method: '*',
+  handler(request, h) {
+    return h.response({
+      message: 'visit our docs at /documentation to view all routes',
+      status: 'Not found',
+    }).code(404);
+  },
+};
+
 const scheme = () => ({
   api: {
     settings: {
@@ -45,6 +56,7 @@ const controllerPlugin = {
     server.route(viewMessage);
     server.route(deleteInbox);
     server.route(deleteOutbox);
+    server.route(notFound);
   },
 };
 

@@ -14,7 +14,7 @@ const createUser = {
       return h.response({ message: `${phoneNumber} has been registered` }).code(201);
     } catch (error) {
       if (error.errors && error.errors[0].type === 'unique violation') {
-        return Boom.conflict(error.errors[0].message);
+        return h.response({ message: 'Phone number must be unique' }).code(409);
       }
       return Boom.badRequest(error.message);
     }
