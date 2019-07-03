@@ -4,29 +4,30 @@ import { expect } from 'chai';
 import app from '../src';
 import models from '../sequelize/models';
 
+let secretPuk = null;
 describe('test suite for user operations', () => {
   describe('POST /user', () => {
     before((done) => {
-      models.sequelize
-        .sync({ force: true })
-        .then(() => {
-          done(null);
-        });
+      models.sequelize.sync({ force: true }).then(() => {
+        done(null);
+      });
     });
     it('should successfully register a user', async () => {
       const { result, statusCode } = await app.server.inject({
         method: 'POST',
         url: '/v1/user/register',
-        payload: { name: 'admin', phoneNumber: '02340000000000' },
+        payload: { name: 'admin', phoneNumber: '02340000000000', pin: '1234' },
       });
       expect(statusCode).to.equal(201);
-      expect(result).to.eql({ message: '02340000000000 has been registered' });
+      expect(result).to.include({
+        message: '02340000000000 has been registered',
+      });
     });
     it('should fail to register the same user twice', async () => {
       const { result, statusCode } = await app.server.inject({
         method: 'POST',
         url: '/v1/user/register',
-        payload: { name: 'admin', phoneNumber: '02340000000000' },
+        payload: { name: 'admin', phoneNumber: '02340000000000', pin: '1234' },
       });
       expect(statusCode).to.equal(409);
       expect(result).to.eql({ message: 'Phone number must be unique' });
@@ -35,7 +36,7 @@ describe('test suite for user operations', () => {
       const { result, statusCode } = await app.server.inject({
         method: 'POST',
         url: '/v1/user/register',
-        payload: { name: 'admin', phoneNumber: '0234000000000' },
+        payload: { name: 'admin', phoneNumber: '0234000000000', pin: '1234' },
       });
       expect(statusCode).to.equal(400);
       expect(result).to.include({
@@ -43,19 +44,127 @@ describe('test suite for user operations', () => {
           'child "phoneNumber" fails because [Phone number must contain 14 numbers like so - 0234xxxxxxxxxx]',
       });
     });
-    it('should handle invalide name', async () => {
+    it('should handle invalid name', async () => {
       const { result, statusCode } = await app.server.inject({
         method: 'POST',
         url: '/v1/user/register',
         payload: {
           name: 'friday12 13th',
           phoneNumber: '02341235482375',
+          pin: '1234',
         },
       });
       expect(statusCode).to.equal(400);
       expect(result).to.include({
         message:
           'child "name" fails because [Name must not contain numbers and special characters]',
+      });
+    });
+    it('should handle incomplete form', async () => {
+      const { result, statusCode } = await app.server.inject({
+        method: 'POST',
+        url: '/v1/user/register',
+        payload: {
+          name: 'friday',
+          phoneNumber: '02341235482375',
+        },
+      });
+      expect(statusCode).to.equal(400);
+      expect(result).to.include({
+        message: 'child "pin" fails because [Pin must be four digits]',
+      });
+    });
+    it('should handle invalid credentials', async () => {
+      const { result, statusCode } = await app.server.inject({
+        method: 'POST',
+        url: '/v1/user/signin',
+        payload: {
+          name: 'friday',
+          phoneNumber: '02341235482375',
+          pin: '1234',
+        },
+      });
+      expect(statusCode).to.equal(404);
+      expect(result).to.include({
+        message: 'Invalid credentials',
+      });
+    });
+    it('should handle user sign in', async () => {
+      const { result, statusCode } = await app.server.inject({
+        method: 'POST',
+        url: '/v1/user/signin',
+        payload: { phoneNumber: '02340000000000', pin: '1234' },
+      });
+      secretPuk = result.puk;
+      expect(statusCode).to.equal(200);
+      expect(result).to.include({
+        message: 'Hi admin',
+      });
+    });
+    it('should fail to change pin due to wrongly formatted pin', async () => {
+      const { result, statusCode } = await app.server.inject({
+        method: 'POST',
+        url: '/v1/user/change-pin',
+        payload: { puk: secretPuk, pin: '123', newPin: '1235' },
+      });
+      expect(statusCode).to.equal(400);
+      expect(result).to.include({
+        message: 'child "pin" fails because [Pin must be four digits]',
+      });
+    });
+    it('should fail to change pin due to wrongly formatted new pin', async () => {
+      const { result, statusCode } = await app.server.inject({
+        method: 'POST',
+        url: '/v1/user/change-pin',
+        payload: { puk: secretPuk, pin: '1234', newPin: '12357' },
+      });
+      expect(statusCode).to.equal(400);
+      expect(result).to.include({
+        message: 'child "newPin" fails because [New pin must be four digits]',
+      });
+    });
+    it('should handle pin change', async () => {
+      const { result, statusCode } = await app.server.inject({
+        method: 'POST',
+        url: '/v1/user/change-pin',
+        payload: { puk: secretPuk, pin: '1234', newPin: '1235' },
+      });
+      expect(statusCode).to.equal(200);
+      expect(result).to.include({
+        message: 'Pin successfully changed',
+      });
+    });
+    it('should handle user sign in with new pin', async () => {
+      const { result, statusCode } = await app.server.inject({
+        method: 'POST',
+        url: '/v1/user/signin',
+        payload: { phoneNumber: '02340000000000', pin: '1235' },
+      });
+      expect(statusCode).to.equal(200);
+      expect(result).to.include({
+        message: 'Hi admin',
+      });
+    });
+    it('should fail to sign in with invalid number', async () => {
+      const { result, statusCode } = await app.server.inject({
+        method: 'POST',
+        url: '/v1/user/signin',
+        payload: { phoneNumber: '0234000000000', pin: '1235' },
+      });
+      expect(statusCode).to.equal(400);
+      expect(result).to.include({
+        message: 'child "phoneNumber" fails because [Phone number must contain 14 numbers like so - 0234xxxxxxxxxx]',
+      });
+    });
+    it('should fail to sign in with invalid pin format', async () => {
+      const { result, statusCode } = await app.server.inject({
+        method: 'POST',
+        url: '/v1/user/signin',
+        payload: { phoneNumber: '02340000000000', pin: '12366' },
+      });
+      expect(statusCode).to.equal(400);
+      expect(result).to.include({
+        message: 'child "pin" fails because [Pin must be four digits]',
       });
     });
   });

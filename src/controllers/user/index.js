@@ -1,24 +1,53 @@
 import Boom from 'boom';
-import { options } from './userUtils';
+import UUID from 'short-unique-id';
+import { options, pinChangeOptions, signinOptions } from './userUtils';
+import UserOps from './services';
 
-const createUser = {
+export const createUser = {
   path: '/v1/user/register',
   method: 'POST',
   options,
   async handler(request, h) {
     const { payload } = request;
     const role = payload.phoneNumber === '02340000000000' ? 'admin' : 'user';
+    payload.role = role;
+    const puk = new UUID();
+    payload.puk = puk.randomUUID(8);
+    const user = new UserOps(this.model, h);
+    return user.createUser(payload);
+  },
+};
+
+export const signIn = {
+  path: '/v1/user/signin',
+  method: 'POST',
+  options: signinOptions,
+  async handler(request, h) {
+    const {
+      payload: { phoneNumber, pin },
+    } = request;
     try {
-      payload.role = role;
-      const { phoneNumber } = await this.model.Users.create(payload);
-      return h.response({ message: `${phoneNumber} has been registered` }).code(201);
+      const user = new UserOps(this.model, h);
+      return user.findUser(phoneNumber, pin);
     } catch (error) {
-      if (error.errors && error.errors[0].type === 'unique violation') {
-        return h.response({ message: 'Phone number must be unique' }).code(409);
-      }
       return Boom.badRequest(error.message);
     }
   },
 };
 
-export default createUser;
+export const changePin = {
+  path: '/v1/user/change-pin',
+  method: 'POST',
+  options: pinChangeOptions,
+  async handler(request, h) {
+    const {
+      payload: { puk, pin, newPin },
+    } = request;
+    try {
+      const user = new UserOps(this.model, h);
+      return user.changePin(puk, pin, newPin);
+    } catch (error) {
+      return Boom.badRequest(error.message);
+    }
+  },
+};

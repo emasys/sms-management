@@ -5,6 +5,8 @@ import app from '../src';
 import models from '../sequelize/models';
 
 let messageId = null;
+let senderToken = null;
+let recipientToken = null;
 describe('test suite for sms operations', () => {
   before((done) => {
     models.sequelize.sync({ force: true }).then(() => {
@@ -19,38 +21,28 @@ describe('test suite for sms operations', () => {
       const { result, statusCode } = await app.server.inject({
         method: 'POST',
         url: '/v1/user/register',
-        payload: { name: 'admin', phoneNumber: '02340000000000' },
+        payload: { name: 'admin', phoneNumber: '02340000000000', pin: '1234' },
       });
+      senderToken = result.token;
       expect(statusCode).to.equal(201);
-      expect(result).to.eql({ message: '02340000000000 has been registered' });
     });
     it('should register a recipient', async () => {
       const { result, statusCode } = await app.server.inject({
         method: 'POST',
         url: '/v1/user/register',
-        payload: { name: 'admin', phoneNumber: '02340000000001' },
+        payload: { name: 'admin', phoneNumber: '02340000000001', pin: '1234' },
       });
+      recipientToken = result.token;
       expect(statusCode).to.equal(201);
-      expect(result).to.eql({ message: '02340000000001 has been registered' });
     });
   });
   describe('Send messages', () => {
-    it('should fail to authorize a sender', async () => {
-      const { statusMessage, statusCode } = await app.server.inject({
-        method: 'POST',
-        url: '/v1/message',
-        payload: { message: 'hello there', phone: '02340000000001' },
-        headers: { phone: '' },
-      });
-      expect(statusMessage).to.equal('Unauthorized');
-      expect(statusCode).to.equal(401);
-    });
     it('should send a message successfully', async () => {
       const { result, statusCode } = await app.server.inject({
         method: 'POST',
         url: '/v1/message',
         payload: { message: 'hello there', phone: '02340000000001' },
-        headers: { phone: '02340000000000' },
+        headers: { Authorization: `Bearer ${senderToken}` },
       });
       expect(statusCode).to.equal(201);
       messageId = result.message.dataValues.id;
@@ -65,7 +57,7 @@ describe('test suite for sms operations', () => {
         method: 'POST',
         url: '/v1/message',
         payload: { message: '', phone: '02340000000001' },
-        headers: { phone: '02340000000000' },
+        headers: { Authorization: `Bearer ${senderToken}` },
       });
       expect(statusCode).to.equal(400);
     });
@@ -74,16 +66,16 @@ describe('test suite for sms operations', () => {
         method: 'POST',
         url: '/v1/message',
         payload: { message: 'hello there', phone: '' },
-        headers: { phone: '02340000000000' },
+        headers: { Authorization: `Bearer ${senderToken}` },
       });
       expect(statusCode).to.equal(400);
     });
-    it('should fail to send a message to a non-existent number', async () => {
+    it('should fail to send a message to a non-registered number', async () => {
       const { result, statusCode } = await app.server.inject({
         method: 'POST',
         url: '/v1/message',
         payload: { message: 'hello there', phone: '924029349082342' },
-        headers: { phone: '02340000000000' },
+        headers: { Authorization: `Bearer ${senderToken}` },
       });
       expect(statusCode).to.equal(400);
       expect(result).to.eql({ message: 'Both recipient and sender must be registered' });
@@ -94,7 +86,7 @@ describe('test suite for sms operations', () => {
       const { result, statusCode } = await app.server.inject({
         method: 'GET',
         url: '/v1/inbox',
-        headers: { phone: '02340000000001' },
+        headers: { Authorization: `Bearer ${recipientToken}` },
       });
       expect(statusCode).to.equal(200);
       expect(result.data).to.have.lengthOf(1);
@@ -108,7 +100,7 @@ describe('test suite for sms operations', () => {
       const { result, statusCode } = await app.server.inject({
         method: 'GET',
         url: '/v1/outbox?limit=1&offset=0',
-        headers: { phone: '02340000000000' },
+        headers: { Authorization: `Bearer ${senderToken}` },
       });
       expect(statusCode).to.equal(200);
       expect(result.data).to.have.lengthOf(1);
@@ -118,11 +110,11 @@ describe('test suite for sms operations', () => {
         status: 'delivered',
       });
     });
-    it('should allow sender view a message', async () => {
+    it('should let sender view a message', async () => {
       const { result, statusCode } = await app.server.inject({
         method: 'GET',
         url: `/v1/message/${messageId}`,
-        headers: { phone: '02340000000000' },
+        headers: { Authorization: `Bearer ${senderToken}` },
       });
       expect(statusCode).to.equal(200);
       expect(result).to.include({
@@ -131,11 +123,11 @@ describe('test suite for sms operations', () => {
         recipient_status: 'delivered',
       });
     });
-    it('should allow recipient read a message', async () => {
+    it('should let recipient read a message', async () => {
       const { result, statusCode } = await app.server.inject({
         method: 'GET',
         url: `/v1/message/${messageId}`,
-        headers: { phone: '02340000000001' },
+        headers: { Authorization: `Bearer ${recipientToken}` },
       });
       expect(statusCode).to.equal(200);
       expect(result).to.include({
@@ -150,7 +142,7 @@ describe('test suite for sms operations', () => {
       const { result, statusCode } = await app.server.inject({
         method: 'DELETE',
         url: `/v1/inbox/${messageId}`,
-        headers: { phone: '02340000000001' },
+        headers: { Authorization: `Bearer ${recipientToken}` },
       });
       expect(statusCode).to.equal(200);
       expect(result).to.include({
@@ -160,8 +152,8 @@ describe('test suite for sms operations', () => {
     it('should soft delete a message - sender', async () => {
       const { result, statusCode } = await app.server.inject({
         method: 'DELETE',
-        url: `/v1/inbox/${messageId}`,
-        headers: { phone: '02340000000001' },
+        url: `/v1/outbox/${messageId}`,
+        headers: { Authorization: `Bearer ${senderToken}` },
       });
       expect(statusCode).to.equal(200);
       expect(result).to.include({
@@ -172,7 +164,7 @@ describe('test suite for sms operations', () => {
       const { result, statusCode } = await app.server.inject({
         method: 'DELETE',
         url: `/v1/inbox/${messageId}`,
-        headers: { phone: '02340000000000' },
+        headers: { Authorization: `Bearer ${senderToken}` },
       });
       expect(statusCode).to.equal(401);
       expect(result).to.include({
@@ -180,34 +172,12 @@ describe('test suite for sms operations', () => {
       });
     });
   });
-  describe('Delete messages', () => {
-    it('should soft delete a message - recipient', async () => {
-      const { result, statusCode } = await app.server.inject({
-        method: 'DELETE',
-        url: `/v1/inbox/${messageId}`,
-        headers: { phone: '02340000000001' },
-      });
-      expect(statusCode).to.equal(200);
-      expect(result).to.include({
-        message: 'Message deleted',
-      });
-    });
-    it('should soft delete a message - sender', async () => {
-      const { result, statusCode } = await app.server.inject({
-        method: 'DELETE',
-        url: `/v1/inbox/${messageId}`,
-        headers: { phone: '02340000000001' },
-      });
-      expect(statusCode).to.equal(200);
-      expect(result).to.include({
-        message: 'Message deleted',
-      });
-    });
+  describe('404 route', () => {
     it('should try to access an invalid route', async () => {
       const { result, statusCode } = await app.server.inject({
         method: 'GET',
         url: '/v2/inbox',
-        headers: { phone: '02340000000000' },
+        headers: { Authorization: `Bearer ${senderToken}` },
       });
       expect(statusCode).to.equal(404);
       expect(result).to.eql({
