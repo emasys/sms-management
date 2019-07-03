@@ -31,7 +31,8 @@
     "exclude": [
       "src/controllers/sms/index.js",
       "src/index.js",
-      "src/controllers/user/index.js"
+      "src/controllers/user/index.js",
+      "sequelize/"
     ]
   },
   "homepage": "https://github.com/emasys/sms-management#readme",
@@ -74,7 +75,8 @@
     "pg": "^7.11.0",
     "pg-hstore": "^2.3.3",
     "sequelize": "^4.44.0",
-    "sequelize-cli": "^5.4.0",
+    "sequelize-cli": "^5.5.0",
+    "short-unique-id": "^1.1.1",
     "uuid": "^3.3.2",
     "vision": "^5.4.4"
   }

@@ -38,11 +38,13 @@ export default (sequelize, DataTypes) => {
   Sms.associate = (models) => {
     Sms.belongsTo(models.Users, {
       foreignKey: 'sender',
+      onDelete: 'CASCADE',
     });
   };
   Sms.associate = (models) => {
     Sms.belongsTo(models.Users, {
       foreignKey: 'recipient',
+      onDelete: 'CASCADE',
     });
   };
 

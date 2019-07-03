@@ -22,6 +22,14 @@ module.exports = {
       allowNull: false,
       unique: true,
     },
+    pin: {
+      type: Sequelize.STRING,
+      allowNull: false,
+    },
+    puk: {
+      type: Sequelize.STRING,
+      allowNull: false,
+    },
     createdAt: {
       allowNull: false,
       type: Sequelize.DATE,
