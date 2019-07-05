@@ -1,5 +1,7 @@
 import model from '../../sequelize/models';
-import { signIn, createUser, changePin } from './user';
+import {
+  signIn, createUser, changePin, deleteUser,
+} from './user';
 import {
   fetchUserInbox,
   sendMessage,
@@ -33,8 +35,8 @@ const controllerPlugin = {
         const credentials = token.decodedJWT;
         // eslint-disable-next-line no-unused-expressions
         credentials.role === 'admin'
-          ? credentials.scope = 'admin'
-          : credentials.scope = 'user';
+          ? (credentials.scope = 'admin')
+          : (credentials.scope = 'user');
         return {
           isValid: true,
           credentials,
@@ -51,6 +53,7 @@ const controllerPlugin = {
     server.route(viewMessage);
     server.route(deleteInbox);
     server.route(deleteOutbox);
+    server.route(deleteUser);
     server.route(notFound);
   },
 };

@@ -88,6 +88,21 @@ class UserOps {
     }
     return this.invalidCredentials();
   }
+
+  async deleteUser(id) {
+    try {
+      const response = await this.model.Users.destroy({ where: { id } });
+      if (response) {
+        return this.h.response({ message: 'User deleted' }).code(200);
+      }
+      return this.h.response({ message: 'User not found' }).code(404);
+    } catch (error) {
+      return this.h.response({
+        message: "You don't have the privilege to delete a user",
+      })
+        .code(401);
+    }
+  }
 }
 
 export default UserOps;
