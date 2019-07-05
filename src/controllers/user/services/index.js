@@ -12,13 +12,13 @@ class UserOps {
     return this.h.response({ message: 'Invalid credentials' }).code(404);
   }
 
+  userNotFound() {
+    return this.h.response({ message: 'User not found' }).code(404);
+  }
+
   async createUser(payload) {
     try {
-      const {
-        phoneNumber, role, puk,
-      } = await this.model.Users.create(
-        payload,
-      );
+      const { phoneNumber, role, puk } = await this.model.Users.create(payload);
       const token = signToken(phoneNumber, role);
       return this.h
         .response({
@@ -30,7 +30,9 @@ class UserOps {
         .code(201);
     } catch (error) {
       if (error.errors && error.errors[0].type === 'unique violation') {
-        return this.h.response({ message: 'Phone number must be unique' }).code(409);
+        return this.h
+          .response({ message: 'Phone number must be unique' })
+          .code(409);
       }
       return Boom.badRequest(error.message);
     }
@@ -52,9 +54,7 @@ class UserOps {
   async findUser(phoneNumber, pin) {
     const isAuthenticated = await this.authenticateUser(phoneNumber, pin);
     if (isAuthenticated) {
-      const {
-        role, puk, name,
-      } = isAuthenticated;
+      const { role, puk, name } = isAuthenticated;
       const token = signToken(phoneNumber, role);
       return this.h
         .response({
@@ -95,12 +95,28 @@ class UserOps {
       if (response) {
         return this.h.response({ message: 'User deleted' }).code(200);
       }
-      return this.h.response({ message: 'User not found' }).code(404);
+      return this.userNotFound();
     } catch (error) {
-      return this.h.response({
-        message: "You don't have the privilege to delete a user",
-      })
+      return this.h
+        .response({
+          message: "You don't have the privilege to delete a user",
+        })
         .code(401);
+    }
+  }
+
+  async changeRole(id, role) {
+    try {
+      const [isUpdated] = await this.model.Users.update(
+        { role },
+        { where: { id } },
+      );
+      if (isUpdated) {
+        return this.h.response({ message: `Role updated to [${role}]` }).code(200);
+      }
+      return this.userNotFound();
+    } catch (error) {
+      return Boom.badImplementation('Could not update role, check log for more info');
     }
   }
 }

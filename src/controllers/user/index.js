@@ -1,7 +1,7 @@
 import Boom from 'boom';
 import UUID from 'short-unique-id';
 import {
-  options, pinChangeOptions, signinOptions, deleteUserOptions,
+  options, pinChangeOptions, signinOptions, deleteUserOptions, changeRoleOptions,
 } from './userUtils';
 import UserOps from './services';
 
@@ -62,5 +62,17 @@ export const deleteUser = {
     const { userId } = request.params;
     const user = new UserOps(this.model, h);
     return user.deleteUser(userId);
+  },
+};
+
+export const changeRole = {
+  path: '/v1/user/{userId}',
+  method: 'PUT',
+  options: changeRoleOptions,
+  async handler(request, h) {
+    const { userId } = request.params;
+    const { role } = request.payload;
+    const user = new UserOps(this.model, h);
+    return user.changeRole(userId, role);
   },
 };

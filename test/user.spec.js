@@ -204,5 +204,28 @@ describe('test suite for user operations', () => {
         message: 'User not found',
       });
     });
+    it('should fail to update user role', async () => {
+      const { result, statusCode } = await app.server.inject({
+        method: 'PUT',
+        url: '/v1/user/10',
+        headers: { Authorization: `Bearer ${userToken}` },
+      });
+      expect(statusCode).to.equal(403);
+      expect(result).to.include({
+        message: 'Insufficient scope',
+      });
+    });
+    it('should update user role', async () => {
+      const { result, statusCode } = await app.server.inject({
+        method: 'PUT',
+        url: '/v1/user/2',
+        headers: { Authorization: `Bearer ${adminToken}` },
+        payload: { role: 'admin' },
+      });
+      expect(statusCode).to.equal(200);
+      expect(result).to.include({
+        message: 'Role updated to [admin]',
+      });
+    });
   });
 });
