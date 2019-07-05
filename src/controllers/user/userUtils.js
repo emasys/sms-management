@@ -77,6 +77,19 @@ export const pinChangeOptions = {
   },
 };
 
+export const deleteUserOptions = {
+  description: 'Delete User',
+  tags: ['api'],
+  auth: {
+    scope: ['admin'],
+  },
+  validate: {
+    params: Joi.object().keys({
+      userId: Joi.number().required(),
+    }),
+  },
+};
+
 export const signToken = (phoneNumber, role) => {
   const token = jwt.sign(
     {

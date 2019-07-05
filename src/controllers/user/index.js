@@ -1,6 +1,8 @@
 import Boom from 'boom';
 import UUID from 'short-unique-id';
-import { options, pinChangeOptions, signinOptions } from './userUtils';
+import {
+  options, pinChangeOptions, signinOptions, deleteUserOptions,
+} from './userUtils';
 import UserOps from './services';
 
 export const createUser = {
@@ -49,5 +51,16 @@ export const changePin = {
     } catch (error) {
       return Boom.badRequest(error.message);
     }
+  },
+};
+
+export const deleteUser = {
+  path: '/v1/user/{userId}',
+  method: 'DELETE',
+  options: deleteUserOptions,
+  async handler(request, h) {
+    const { userId } = request.params;
+    const user = new UserOps(this.model, h);
+    return user.deleteUser(userId);
   },
 };

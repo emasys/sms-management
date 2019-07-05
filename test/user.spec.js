@@ -5,6 +5,8 @@ import app from '../src';
 import models from '../sequelize/models';
 
 let secretPuk = null;
+let adminToken = null;
+let userToken = null;
 describe('test suite for user operations', () => {
   describe('POST /user', () => {
     before((done) => {
@@ -12,15 +14,28 @@ describe('test suite for user operations', () => {
         done(null);
       });
     });
-    it('should successfully register a user', async () => {
+    it('should successfully register an admin', async () => {
       const { result, statusCode } = await app.server.inject({
         method: 'POST',
         url: '/v1/user/register',
         payload: { name: 'admin', phoneNumber: '02340000000000', pin: '1234' },
       });
       expect(statusCode).to.equal(201);
+      adminToken = result.token;
       expect(result).to.include({
         message: '02340000000000 has been registered',
+      });
+    });
+    it('should successfully register a user', async () => {
+      const { result, statusCode } = await app.server.inject({
+        method: 'POST',
+        url: '/v1/user/register',
+        payload: { name: 'admin', phoneNumber: '02340000000001', pin: '1234' },
+      });
+      expect(statusCode).to.equal(201);
+      userToken = result.token;
+      expect(result).to.include({
+        message: '02340000000001 has been registered',
       });
     });
     it('should fail to register the same user twice', async () => {
@@ -165,6 +180,28 @@ describe('test suite for user operations', () => {
       expect(statusCode).to.equal(400);
       expect(result).to.include({
         message: 'child "pin" fails because [Pin must be four digits]',
+      });
+    });
+    it('should fail to delete a user if not admin', async () => {
+      const { result, statusCode } = await app.server.inject({
+        method: 'DELETE',
+        url: '/v1/user/1',
+        headers: { Authorization: `Bearer ${userToken}` },
+      });
+      expect(statusCode).to.equal(403);
+      expect(result).to.include({
+        message: 'Insufficient scope',
+      });
+    });
+    it('should fail to delete a user not registered', async () => {
+      const { result, statusCode } = await app.server.inject({
+        method: 'DELETE',
+        url: '/v1/user/10',
+        headers: { Authorization: `Bearer ${adminToken}` },
+      });
+      expect(statusCode).to.equal(404);
+      expect(result).to.include({
+        message: 'User not found',
       });
     });
   });
