@@ -9,6 +9,7 @@ export const options = {
     payload: Joi.object().keys({
       phoneNumber: Joi.string()
         .regex(/[0-9]{14}/)
+        .length(14)
         .required()
         .error(() => ({
           message: 'Phone number must contain 14 numbers like so - 0234xxxxxxxxxx',
@@ -37,6 +38,7 @@ export const signinOptions = {
     payload: Joi.object().keys({
       phoneNumber: Joi.string()
         .regex(/[0-9]{14}/)
+        .length(14)
         .required()
         .error(() => ({
           message: 'Phone number must contain 14 numbers like so - 0234xxxxxxxxxx',
@@ -86,6 +88,22 @@ export const deleteUserOptions = {
   validate: {
     params: Joi.object().keys({
       userId: Joi.number().required(),
+    }),
+  },
+};
+
+export const changeRoleOptions = {
+  description: 'Change user role',
+  tags: ['api'],
+  auth: {
+    scope: ['admin'],
+  },
+  validate: {
+    params: Joi.object().keys({
+      userId: Joi.number().required(),
+    }),
+    payload: Joi.object().keys({
+      role: Joi.string().valid('admin', 'user').required(),
     }),
   },
 };

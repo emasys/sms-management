@@ -1,6 +1,6 @@
 import model from '../../sequelize/models';
 import {
-  signIn, createUser, changePin, deleteUser,
+  signIn, createUser, changePin, deleteUser, changeRole,
 } from './user';
 import {
   fetchUserInbox,
@@ -47,6 +47,7 @@ const controllerPlugin = {
     server.route(createUser);
     server.route(signIn);
     server.route(changePin);
+    server.route(changeRole);
     server.route(fetchUserInbox);
     server.route(fetchUserOutbox);
     server.route(sendMessage);
