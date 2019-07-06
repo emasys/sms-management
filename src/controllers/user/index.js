@@ -32,6 +32,7 @@ export const signIn = {
       const user = new UserOps(this.model, h);
       return user.findUser(phoneNumber, pin);
     } catch (error) {
+      /* istanbul ignore next */
       return Boom.badRequest(error.message);
     }
   },
@@ -49,6 +50,7 @@ export const changePin = {
       const user = new UserOps(this.model, h);
       return user.changePin(puk, pin, newPin);
     } catch (error) {
+      /* istanbul ignore next */
       return Boom.badRequest(error.message);
     }
   },
