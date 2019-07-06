@@ -29,11 +29,13 @@ class UserOps {
         })
         .code(201);
     } catch (error) {
+      /* istanbul ignore next */
       if (error.errors && error.errors[0].type === 'unique violation') {
         return this.h
           .response({ message: 'Phone number must be unique' })
           .code(409);
       }
+      /* istanbul ignore next */
       return Boom.badRequest(error.message);
     }
   }
@@ -97,6 +99,7 @@ class UserOps {
       }
       return this.userNotFound();
     } catch (error) {
+      /* istanbul ignore next */
       return this.h
         .response({
           message: "You don't have the privilege to delete a user",
@@ -116,6 +119,7 @@ class UserOps {
       }
       return this.userNotFound();
     } catch (error) {
+      /* istanbul ignore next */
       return Boom.badImplementation('Could not update role, check log for more info');
     }
   }

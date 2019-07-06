@@ -11,7 +11,7 @@ import {
 import SmsOps from './services';
 
 export const fetchUserInbox = {
-  path: '/v1/inbox',
+  path: '/inbox',
   method: 'GET',
   options: fetchInbox,
   async handler(request, h) {
@@ -20,7 +20,7 @@ export const fetchUserInbox = {
 };
 
 export const fetchUserOutbox = {
-  path: '/v1/outbox',
+  path: '/outbox',
   method: 'GET',
   options: fetchOutbox,
   async handler(request, h) {
@@ -29,7 +29,7 @@ export const fetchUserOutbox = {
 };
 
 export const sendMessage = {
-  path: '/v1/message',
+  path: '/message',
   method: 'POST',
   options: sendOptions,
   async handler(request, h) {
@@ -52,7 +52,7 @@ export const sendMessage = {
 };
 
 export const viewMessage = {
-  path: '/v1/message/{messageId}',
+  path: '/message/{messageId}',
   method: 'GET',
   options: readOptions,
   async handler(request, h) {
@@ -69,7 +69,7 @@ export const viewMessage = {
 };
 
 export const deleteInbox = {
-  path: '/v1/inbox/{messageId}',
+  path: '/inbox/{messageId}',
   options: deleteOptions,
   method: 'DELETE',
   async handler(request, h) {
@@ -78,7 +78,7 @@ export const deleteInbox = {
 };
 
 export const deleteOutbox = {
-  path: '/v1/outbox/{messageId}',
+  path: '/outbox/{messageId}',
   method: 'DELETE',
   options: deleteOptions,
   async handler(request, h) {

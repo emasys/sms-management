@@ -16,6 +16,14 @@ const config = {
     dialect: 'postgres',
     logging: false,
   },
+  production: {
+    use_env_variable: 'DATABASE_URL',
+    dialect: 'postgres',
+    ssl: true,
+    dialectOptions: {
+      ssl: { require: true },
+    },
+  },
 };
 
 module.exports = config;

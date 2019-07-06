@@ -2,7 +2,7 @@
 import '@babel/polyfill';
 import { expect } from 'chai';
 import app from '../src';
-import models from '../sequelize/models';
+import models from '../src/sequelize/models';
 
 let secretPuk = null;
 let adminToken = null;
@@ -138,6 +138,17 @@ describe('test suite for user operations', () => {
         message: 'child "newPin" fails because [New pin must be four digits]',
       });
     });
+    it('should fail to change pin due to wrong puk', async () => {
+      const { result, statusCode } = await app.server.inject({
+        method: 'POST',
+        url: '/v1/user/change-pin',
+        payload: { puk: 'pork', pin: '1234', newPin: '1235' },
+      });
+      expect(statusCode).to.equal(404);
+      expect(result).to.include({
+        message: 'Invalid credentials',
+      });
+    });
     it('should handle pin change', async () => {
       const { result, statusCode } = await app.server.inject({
         method: 'POST',
@@ -147,6 +158,17 @@ describe('test suite for user operations', () => {
       expect(statusCode).to.equal(200);
       expect(result).to.include({
         message: 'Pin successfully changed',
+      });
+    });
+    it('should fail to sign in with old pin', async () => {
+      const { result, statusCode } = await app.server.inject({
+        method: 'POST',
+        url: '/v1/user/signin',
+        payload: { phoneNumber: '02340000000000', pin: '1234' },
+      });
+      expect(statusCode).to.equal(404);
+      expect(result).to.include({
+        message: 'Invalid credentials',
       });
     });
     it('should handle user sign in with new pin', async () => {
@@ -182,28 +204,6 @@ describe('test suite for user operations', () => {
         message: 'child "pin" fails because [Pin must be four digits]',
       });
     });
-    it('should fail to delete a user if not admin', async () => {
-      const { result, statusCode } = await app.server.inject({
-        method: 'DELETE',
-        url: '/v1/user/1',
-        headers: { Authorization: `Bearer ${userToken}` },
-      });
-      expect(statusCode).to.equal(403);
-      expect(result).to.include({
-        message: 'Insufficient scope',
-      });
-    });
-    it('should fail to delete a user not registered', async () => {
-      const { result, statusCode } = await app.server.inject({
-        method: 'DELETE',
-        url: '/v1/user/10',
-        headers: { Authorization: `Bearer ${adminToken}` },
-      });
-      expect(statusCode).to.equal(404);
-      expect(result).to.include({
-        message: 'User not found',
-      });
-    });
     it('should fail to update user role', async () => {
       const { result, statusCode } = await app.server.inject({
         method: 'PUT',
@@ -225,6 +225,51 @@ describe('test suite for user operations', () => {
       expect(statusCode).to.equal(200);
       expect(result).to.include({
         message: 'Role updated to [admin]',
+      });
+    });
+    it('should fail to update role of unregistered user', async () => {
+      const { result, statusCode } = await app.server.inject({
+        method: 'PUT',
+        url: '/v1/user/20',
+        headers: { Authorization: `Bearer ${adminToken}` },
+        payload: { role: 'admin' },
+      });
+      expect(statusCode).to.equal(404);
+      expect(result).to.include({
+        message: 'User not found',
+      });
+    });
+    it('should fail to delete a user if not admin', async () => {
+      const { result, statusCode } = await app.server.inject({
+        method: 'DELETE',
+        url: '/v1/user/1',
+        headers: { Authorization: `Bearer ${userToken}` },
+      });
+      expect(statusCode).to.equal(403);
+      expect(result).to.include({
+        message: 'Insufficient scope',
+      });
+    });
+    it('should delete a user', async () => {
+      const { result, statusCode } = await app.server.inject({
+        method: 'DELETE',
+        url: '/v1/user/1',
+        headers: { Authorization: `Bearer ${adminToken}` },
+      });
+      expect(statusCode).to.equal(200);
+      expect(result).to.include({
+        message: 'User deleted',
+      });
+    });
+    it('should fail to delete a user not registered', async () => {
+      const { result, statusCode } = await app.server.inject({
+        method: 'DELETE',
+        url: '/v1/user/10',
+        headers: { Authorization: `Bearer ${adminToken}` },
+      });
+      expect(statusCode).to.equal(404);
+      expect(result).to.include({
+        message: 'User not found',
       });
     });
   });

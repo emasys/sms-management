@@ -36,6 +36,7 @@ export default (sequelize, DataTypes) => {
   });
 
   Sms.associate = (models) => {
+    /* istanbul ignore next */
     Sms.belongsTo(models.Users, {
       foreignKey: 'sender',
       onDelete: 'CASCADE',
@@ -44,7 +45,7 @@ export default (sequelize, DataTypes) => {
   Sms.associate = (models) => {
     Sms.belongsTo(models.Users, {
       foreignKey: 'recipient',
-      onDelete: 'CASCADE',
+      onDelete: 'SET NULL',
     });
   };
 
