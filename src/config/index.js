@@ -7,7 +7,7 @@ import controller from '../controllers';
 const config = {
   server: {
     debug: { request: ['error'] },
-    port: 8080,
+    port: process.env.PORT || 8080,
     router: { stripTrailingSlash: true },
     routes: {
       timeout: { server: 15000 },

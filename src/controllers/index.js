@@ -1,4 +1,4 @@
-import model from '../../sequelize/models';
+import model from '../sequelize/models';
 import {
   signIn, createUser, changePin, deleteUser, changeRole,
 } from './user';
@@ -10,19 +10,7 @@ import {
   deleteInbox,
   deleteOutbox,
 } from './sms';
-
-export const notFound = {
-  path: '/{any*}',
-  method: '*',
-  handler(request, h) {
-    return h
-      .response({
-        message: 'visit our docs at /documentation to view all routes',
-        status: 'Not found',
-      })
-      .code(404);
-  },
-};
+import { notFound } from './misc';
 
 const controllerPlugin = {
   name: 'controller',
@@ -44,6 +32,9 @@ const controllerPlugin = {
       },
     });
     server.auth.default('jwt-strategy');
+    server.route(notFound);
+    // eslint-disable-next-line no-param-reassign
+    server.realm.modifiers.route.prefix = '/v1';
     server.route(createUser);
     server.route(signIn);
     server.route(changePin);
@@ -55,7 +46,6 @@ const controllerPlugin = {
     server.route(deleteInbox);
     server.route(deleteOutbox);
     server.route(deleteUser);
-    server.route(notFound);
   },
 };
 

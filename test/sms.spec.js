@@ -2,7 +2,7 @@
 import '@babel/polyfill';
 import { expect } from 'chai';
 import app from '../src';
-import models from '../sequelize/models';
+import models from '../src/sequelize/models';
 
 let messageId = null;
 let senderToken = null;
@@ -50,6 +50,18 @@ describe('test suite for sms operations', () => {
         message: 'hello there',
         sender: '02340000000000',
         status: 'delivered',
+      });
+    });
+    it('should fail to send a message oneself', async () => {
+      const { result, statusCode } = await app.server.inject({
+        method: 'POST',
+        url: '/v1/message',
+        payload: { message: 'hello there', phone: '02340000000000' },
+        headers: { Authorization: `Bearer ${senderToken}` },
+      });
+      expect(statusCode).to.equal(400);
+      expect(result).to.include({
+        message: 'You cannot send a message to yourself.',
       });
     });
     it('should fail to send an empty message', async () => {
@@ -181,7 +193,8 @@ describe('test suite for sms operations', () => {
       });
       expect(statusCode).to.equal(404);
       expect(result).to.eql({
-        message: 'visit our docs at /documentation to view all routes',
+        message: 'Welcome to sms management application',
+        nextStep: 'check our docs at /documentation to get started.',
         status: 'Not found',
       });
     });

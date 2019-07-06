@@ -7,13 +7,14 @@
     "test": "test"
   },
   "scripts": {
-    "start": "nodemon --exec babel-node ./src/index.js",
+    "dev": "nodemon --exec babel-node ./src/index.js",
     "build": "babel src --out-dir ./dist --source-maps",
-    "serve": "node ./dist/index.js",
+    "start": "node ./dist/index.js",
     "test": "NODE_ENV=test nyc mocha ./test/*.spec.js --require @babel/register --exit && nyc report --reporter=text-lcov | coveralls",
     "test:watch": "NODE_ENV=test mocha --timeout=50000 ./test/*.spec.js --require @babel/register --watch",
     "debug": "node --inspect-brk ./dist/index.js",
-    "migrate": "npx sequelize db:migrate"
+    "migrate": "sequelize db:migrate",
+    "heroku-postbuild": "npm run build && npm run migrate"
   },
   "repository": {
     "type": "git",
@@ -31,8 +32,7 @@
     "exclude": [
       "src/controllers/sms/index.js",
       "src/index.js",
-      "src/controllers/user/index.js",
-      "sequelize/"
+      "src/controllers/user/index.js"
     ]
   },
   "homepage": "https://github.com/emasys/sms-management#readme",

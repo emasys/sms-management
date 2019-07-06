@@ -11,15 +11,21 @@ class SmsOps {
 
   async sendMessage(data) {
     if (data.recipient === data.sender) {
-      return Boom.badRequest('You cannot send a message to yourself.');
+      return this.h
+        .response({ message: 'You cannot send a message to yourself.' })
+        .code(400);
     }
     try {
       const response = await this.model.Sms.create(data);
       return this.h.response({ message: response }).code(201);
     } catch (error) {
+      /* istanbul ignore next */
       if (error.message.includes('insert or update')) {
-        return this.h.response({ message: 'Both recipient and sender must be registered' }).code(400);
+        return this.h
+          .response({ message: 'Both recipient and sender must be registered' })
+          .code(400);
       }
+      /* istanbul ignore next */
       return Boom.badRequest(error.message);
     }
   }
@@ -44,14 +50,23 @@ class SmsOps {
       meta.pages = pages;
       return { data, meta };
     } catch (error) {
+      /* istanbul ignore next */
       return Boom.badRequest(error.message);
     }
   }
 
   async readMessage(id, recipient) {
     const criteria = { where: { id, recipient }, returning: true, plain: true };
-    const response = await this.model.Sms.update({ recipient_status: 'read' }, criteria);
-    const message = pick(response[1], ['sender', 'recipient_status', 'createdAt', 'message']);
+    const response = await this.model.Sms.update(
+      { recipient_status: 'read' },
+      criteria,
+    );
+    const message = pick(response[1], [
+      'sender',
+      'recipient_status',
+      'createdAt',
+      'message',
+    ]);
     return message;
   }
 
@@ -62,16 +77,26 @@ class SmsOps {
       if (!message) {
         return this.readMessage(id, user);
       }
-      const response = pick(message, ['recipient', 'recipient_status', 'createdAt', 'message']);
+      const response = pick(message, [
+        'recipient',
+        'recipient_status',
+        'createdAt',
+        'message',
+      ]);
       return response;
     } catch (error) {
+      /* istanbul ignore next */
       return Boom.badRequest(error.message);
     }
   }
 
   handleDeleteCriteria(id, phone, user) {
     const criteria = {
-      recipient: { where: { id, recipient: phone }, returning: true, raw: true },
+      recipient: {
+        where: { id, recipient: phone },
+        returning: true,
+        raw: true,
+      },
       sender: { where: { id, sender: phone }, returning: true, raw: true },
     };
     return criteria[user];
@@ -98,8 +123,11 @@ class SmsOps {
         }
         return { message: 'Message deleted' };
       }
-      return this.h.response({ message: 'You are not authorized to delete this message' }).code(401);
+      return this.h
+        .response({ message: 'You are not authorized to delete this message' })
+        .code(401);
     } catch (error) {
+      /* istanbul ignore next */
       return Boom.badRequest(error.message);
     }
   }

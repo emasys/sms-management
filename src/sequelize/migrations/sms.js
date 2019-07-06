@@ -7,7 +7,7 @@ module.exports = {
     },
     recipient: {
       type: Sequelize.STRING,
-      onDelete: 'CASCADE',
+      onDelete: 'SET NULL',
       references: {
         model: 'Users',
         key: 'phoneNumber',

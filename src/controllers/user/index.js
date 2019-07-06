@@ -6,7 +6,7 @@ import {
 import UserOps from './services';
 
 export const createUser = {
-  path: '/v1/user/register',
+  path: '/user/register',
   method: 'POST',
   options,
   async handler(request, h) {
@@ -21,7 +21,7 @@ export const createUser = {
 };
 
 export const signIn = {
-  path: '/v1/user/signin',
+  path: '/user/signin',
   method: 'POST',
   options: signinOptions,
   async handler(request, h) {
@@ -38,7 +38,7 @@ export const signIn = {
 };
 
 export const changePin = {
-  path: '/v1/user/change-pin',
+  path: '/user/change-pin',
   method: 'POST',
   options: pinChangeOptions,
   async handler(request, h) {
@@ -55,7 +55,7 @@ export const changePin = {
 };
 
 export const deleteUser = {
-  path: '/v1/user/{userId}',
+  path: '/user/{userId}',
   method: 'DELETE',
   options: deleteUserOptions,
   async handler(request, h) {
@@ -66,7 +66,7 @@ export const deleteUser = {
 };
 
 export const changeRole = {
-  path: '/v1/user/{userId}',
+  path: '/user/{userId}',
   method: 'PUT',
   options: changeRoleOptions,
   async handler(request, h) {

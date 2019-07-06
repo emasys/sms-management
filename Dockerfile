@@ -7,6 +7,7 @@ RUN npm install
 COPY . .
 
 RUN git clone https://github.com/vishnubob/wait-for-it.git
+RUN npm run build
 
 EXPOSE 4000
 
