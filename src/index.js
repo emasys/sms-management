@@ -19,7 +19,9 @@ export const startServer = async () => {
     Log(`Server running at: ${server.info.uri}`);
     Log(`docs running at ${server.info.uri}/documentation`);
   } catch (error) {
+    /* istanbul ignore next */
     Log.error(error);
+    /* istanbul ignore next */
     process.exit(1);
   }
 };
